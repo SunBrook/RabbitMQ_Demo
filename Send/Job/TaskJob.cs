@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Send
+namespace Send.Job
 {
     public class TaskJob : IJob
     {

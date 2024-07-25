@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Send.Job;
+using System;
 
 namespace Send
 {
@@ -6,12 +7,12 @@ namespace Send
     {
         static void Main(string[] args)
         {
-            new ProduceJob().Work();
+            //new ProduceJob().Work();
 
-            //QuartzFactory.CreateTask<ProduceJob>
-            //   ("Produce", "ConsumesPull",
-            //   "消耗拉取生产者定时任务：整点执行一次",
-            //   "0 0 * * * ?", mqueueName).Wait();
+            QuartzFactory.CreateTask<ProduceJob>
+               ("Produce", "ConsumesPull",
+               "消耗拉取生产者定时任务：整点执行一次",
+               "0 0/2 * * * ?").Wait();
 
             Console.WriteLine("任务调度添加完成");
             Console.Read();

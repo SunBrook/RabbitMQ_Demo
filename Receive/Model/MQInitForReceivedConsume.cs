@@ -1,7 +1,8 @@
 ﻿using RabbitMQ.Client;
+using Receive.Model;
 using System;
 
-namespace Receive
+namespace Receive.Model
 {
     public static class MQInitForReceivedConsume
     {
@@ -44,34 +45,39 @@ namespace Receive
         {
             var factory = new ConnectionFactory
             {
-                HostName = "hostName",
-                Port = 5672,
-                UserName = "username",
-                Password = "password",
+                HostName = MQInit.Host,
+                Port = MQInit.ClientPort,
+                UserName = MQInit.User,
+                Password = MQInit.Password,
                 AutomaticRecoveryEnabled = true, // 自动重连
                 RequestedFrameMax = uint.MaxValue,
                 RequestedHeartbeat = TimeSpan.FromSeconds(60), // 心跳超时时间
             };
 
             // 设置客户端名称（方便识别多个客户端，强烈建议设置）
-            factory.ClientProvidedName = $"customer_{Guid.NewGuid():N}";
+            lock (_locker)
+            {
+                factory.ClientProvidedName = $"customer_{Guid.NewGuid():N}";
+            }
 
             return factory.CreateConnection();
         }
+
+
 
         /// <summary>
         /// 获取批量获取消息消费的链接
         /// </summary>
         /// <param name="batchCount"></param>
         /// <returns></returns>
-        public static IConnection GetBatchConnection(ushort batchCount)
+        public static IConnection GetConnectionBatch(ushort batchCount)
         {
             var factory = new ConnectionFactory
             {
-                HostName = "hostName",
-                Port = 5672,
-                UserName = "username",
-                Password = "password",
+                HostName = MQInit.Host,
+                Port = MQInit.ClientPort,
+                UserName = MQInit.User,
+                Password = MQInit.Password,
                 AutomaticRecoveryEnabled = true, // 自动重连
                 RequestedFrameMax = uint.MaxValue,
                 RequestedHeartbeat = TimeSpan.FromSeconds(60), // 心跳超时时间
@@ -79,7 +85,12 @@ namespace Receive
 
             factory.ConsumerDispatchConcurrency = batchCount;
             // 设置客户端名称（方便识别多个客户端，强烈建议设置）
-            factory.ClientProvidedName = $"customer_{Guid.NewGuid():N}";
+
+            lock (_locker)
+            {
+                factory.ClientProvidedName = $"customer_{Guid.NewGuid():N}";
+            }
+            
             factory.DispatchConsumersAsync = true;
 
             return factory.CreateConnection();

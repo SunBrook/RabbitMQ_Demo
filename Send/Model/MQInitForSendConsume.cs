@@ -1,7 +1,7 @@
 ﻿using RabbitMQ.Client;
 using System;
 
-namespace Send
+namespace Send.Model
 {
     public static class MQInitForSendConsume
     {
@@ -44,14 +44,21 @@ namespace Send
         {
             var factory = new ConnectionFactory
             {
-                HostName = "hostName",
-                Port = 5672,
-                UserName = "username",
-                Password = "password",
+                HostName = MQInit.Host,
+                Port = MQInit.ClientPort,
+                UserName = MQInit.User,
+                Password = MQInit.Password,
                 AutomaticRecoveryEnabled = true, // 自动重连
                 RequestedFrameMax = uint.MaxValue,
                 RequestedHeartbeat = TimeSpan.FromSeconds(60), // 心跳超时时间
             };
+
+            // 设置客户端名称（方便识别多个客户端，强烈建议设置）
+            lock (_locker)
+            {
+                factory.ClientProvidedName = $"customer_{Guid.NewGuid():N}";
+            }
+
             return factory.CreateConnection();
         }
     }

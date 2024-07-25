@@ -1,9 +1,11 @@
-﻿using RabbitMQ.Client;
+﻿using Newtonsoft.Json;
+using RabbitMQ.Client;
+using Send.Model;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Send
+namespace Send.Job
 {
     public class ProduceJob : TaskJob
     {
@@ -12,10 +14,15 @@ namespace Send
 			try
 			{
                 Console.WriteLine($"生产消费开始：{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                List<string> messages = new List<string>();
-                for (int i = 0; i < 100; i++)
+                List<MsgInfo> messages = new List<MsgInfo>();
+                for (int i = 1; i < 101; i++)
                 {
-                    messages.Add(i.ToString());
+                    var msg = new MsgInfo
+                    {
+                        Id = i,
+                        Message = Guid.NewGuid().ToString("N").Substring(8)
+                    };
+                    messages.Add(msg);
                 }
 
                 // 发送消息
@@ -32,7 +39,7 @@ namespace Send
             }
         }
 
-        public void SendMessages(List<string> messages, string exChangeName, string queueName, string routingKeyName)
+        public void SendMessages<T>(List<T> messages, string exChangeName, string queueName, string routingKeyName)
         {
             try
             {
@@ -56,9 +63,10 @@ namespace Send
                     {
                         try
                         {
-                            var msgBytes = encoding.GetBytes(msg);
+                            var msgStr = JsonConvert.SerializeObject(msg);
+                            var msgBytes = encoding.GetBytes(msgStr);
                             channel.BasicPublish(exChangeName, routingKeyName, properties, msgBytes);
-                            Console.WriteLine($"生产：{msg}");
+                            Console.WriteLine($"生产：{msgStr}");
                         }
                         catch (Exception ex)
                         {

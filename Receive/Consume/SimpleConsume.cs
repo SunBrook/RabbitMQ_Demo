@@ -1,29 +1,15 @@
 ﻿using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Receive.Model;
 
-namespace Receive
+namespace Receive.Consume
 {
-    public class Consume
+    public class SimpleConsume
     {
-        public static void Work(string message)
-        {
-            try
-            {
-                Console.WriteLine($"消费消息：{message}");
-                Task.Delay(2000).Wait();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"消费异常：{ex.Message}");
-            }
-        }
-
         /// <summary>
         /// 单个消费
         /// </summary>
@@ -35,7 +21,7 @@ namespace Receive
         {
             try
             {
-                using (var connection = MQInitForReceivedConsume.GetConnection())
+                using (var connection = MQInitForReceivedConsume.SharedConnection)
                 using (var channel = connection.CreateModel())
                 {
                     // 指示通道不预取超过1个消息
@@ -87,7 +73,7 @@ namespace Receive
         {
             try
             {
-                using (var connection = MQInitForReceivedConsume.GetBatchConnection(batchCount))
+                using (var connection = MQInitForReceivedConsume.GetConnectionBatch(batchCount))
                 using (var channel = connection.CreateModel())
                 {
                     // 指示通道不预取超过batchCount个消息
